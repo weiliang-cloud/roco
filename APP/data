@@ -1,1 +1,5 @@
 数据来源
+宠物图片：https://res.17roco.qq.com/res/combat/icons/3425-.png
+链接中的3425是宠物编号，更改编号访问链接即可得到想要的宠物图片
+全部宠物数据来自：https://github.com/LennyLennyBruce/roco-magic/blob/main/app/data/pets.ts
+请支持原作者
