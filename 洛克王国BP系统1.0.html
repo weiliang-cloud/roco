@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛克王国征召</title>
+    <style>
+        /* ===== 全局重置 & 基础样式（浅色主题） ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: #e8edf5;
+            background-image: radial-gradient(ellipse at 20% 50%, #d6e0f0 0%, #e8edf5 70%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .bp-container {
+            width: 1300px;
+            max-width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 28px;
+            padding: 24px 28px 28px;
+            border: 2px solid rgba(200, 180, 140, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .bp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(180, 160, 130, 0.2);
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .bp-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bp-title h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #d4a030, #b8860b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(184, 134, 11, 0.1);
+            letter-spacing: 2px;
+        }
+
+        .bp-title .subtitle {
+            color: rgba(80, 70, 50, 0.5);
+            font-size: 13px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .bp-header > div:last-child {
+            color: rgba(80, 70, 50, 0.4);
+            font-size: 12px;
+        }
+
+        /* ===== Ban位行：三列 ===== */
+        .ban-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ban-group {
+            background: rgba(245, 240, 235, 0.7);
+            border-radius: 16px;
+            padding: 10px 12px 12px;
+            border: 1px solid rgba(180, 160, 140, 0.15);
+            min-height: 72px;
+            transition: background 0.2s;
+        }
+
+        .ban-group.drag-over {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .ban-group .ban-label {
+            font-size: 11px;
+            color: rgba(80, 70, 50, 0.5);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ban-group .ban-label .count {
+            color: rgba(180, 150, 80, 0.6);
+            font-size: 10px;
+        }
+
+        .ban-slots {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            min-height: 44px;
+        }
+
+        .ban-slot {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: rgba(200, 190, 180, 0.2);
+            border: 1.5px dashed rgba(160, 150, 140, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .ban-slot.filled {
+            border-style: solid;
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(212, 175, 55, 0.08);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.06);
+        }
+
+        .ban-slot img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .ban-slot .pet-name-tiny {
+            font-size: 7px;
+            color: rgba(80, 70, 50, 0.6);
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            background: rgba(255,255,255,0.6);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        .ban-slot .ban-mark {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 14px;
+            color: #d9534f;
+            filter: drop-shadow(0 0 6px rgba(217, 83, 79, 0.2));
+        }
+
+        .ban-group.public {
+            border-color: rgba(212, 175, 55, 0.2);
+            background: rgba(212, 175, 55, 0.04);
+        }
+        .ban-group.public .ban-label {
+            color: rgba(180, 150, 80, 0.7);
+        }
+        .ban-group.public .ban-slots {
+            justify-content: center;
+        }
+
+        .ban-slot .from-player {
+            font-size: 7px;
+            position: absolute;
+            bottom: 1px;
+            right: 3px;
+            color: rgba(80, 70, 50, 0.3);
+            background: rgba(255,255,255,0.5);
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* ===== 主区域：三栏 ===== */
+        .main-area {
+            display: grid;
+            grid-template-columns: 180px 1fr 180px;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        /* ===== 左右两侧：选择区 ===== */
+        .pick-group {
+            background: rgba(245, 240, 235, 0.6);
+            border-radius: 16px;
+            padding: 12px 12px 14px;
+            border: 1px solid rgba(180, 160, 140, 0.12);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.2s;
+        }
+
+        .pick-group.drag-over {
+            background: rgba(212, 175, 55, 0.08);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .pick-group .pick-label {
+            font-size: 11px;
+            color: rgba(80, 70, 50, 0.5);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pick-group .pick-label .badge {
+            font-size: 9px;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 2px 10px;
+            border-radius: 20px;
+            color: rgba(180, 150, 80, 0.6);
+        }
+
+        .pick-group.player1 .pick-label {
+            color: rgba(50, 130, 200, 0.7);
+        }
+        .pick-group.player2 .pick-label {
+            color: rgba(200, 80, 80, 0.7);
+        }
+
+        .pick-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-height: 300px;
+        }
+
+        .pick-slot {
+            width: 100%;
+            min-height: 52px;
+            border-radius: 12px;
+            background: rgba(200, 190, 180, 0.15);
+            border: 1.5px dashed rgba(160, 150, 140, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+            padding: 4px 8px;
+            flex-shrink: 0;
+        }
+
+        .pick-slot.filled {
+            border-style: solid;
+            border-color: rgba(212, 175, 55, 0.3);
+            background: rgba(212, 175, 55, 0.06);
+            box-shadow: 0 0 16px rgba(212, 175, 55, 0.04);
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        .pick-slot img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .pick-slot .pick-name {
+            font-size: 12px;
+            color: rgba(50, 45, 40, 0.8);
+            font-weight: 400;
+        }
+
+        .pick-slot .pick-value {
+            position: absolute;
+            right: 8px;
+            font-size: 10px;
+            color: rgba(180, 150, 80, 0.3);
+            font-weight: 700;
+        }
+
+        .pick-slot .empty-hint {
+            font-size: 14px;
+            color: rgba(160, 150, 140, 0.3);
+        }
+
+        /* ===== 宠物池 ===== */
+        .pet-pool {
+            background: rgba(245, 240, 235, 0.5);
+            border-radius: 16px;
+            padding: 12px 14px 14px;
+            border: 1px solid rgba(180, 160, 140, 0.1);
+            max-height: 480px;
+            overflow-y: auto;
+        }
+
+        .pet-pool::-webkit-scrollbar {
+            width: 4px;
+        }
+        .pet-pool::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .pet-pool::-webkit-scrollbar-thumb {
+            background: rgba(180, 150, 80, 0.2);
+            border-radius: 10px;
+        }
+
+        .pool-title {
+            font-size: 11px;
+            color: rgba(80, 70, 50, 0.4);
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pool-title .remain {
+            color: rgba(180, 150, 80, 0.4);
+            font-size: 10px;
+        }
+
+        .pool-group {
+            margin-bottom: 8px;
+        }
+
+        .pool-group .group-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(180, 150, 80, 0.6);
+            margin-bottom: 4px;
+            padding-left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pool-group .group-label .line {
+            flex: 1;
+            height: 1px;
+            background: rgba(180, 160, 140, 0.1);
+        }
+
+        .pool-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pool-pet {
+            width: 72px;
+            height: 85px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid rgba(180, 160, 140, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: all 0.2s;
+            position: relative;
+            flex-shrink: 0;
+            padding: 4px 2px;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            gap: 2px;
+        }
+
+        .pool-pet:hover:not(.used) {
+            transform: translateY(-3px);
+            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .pool-pet img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .pool-pet .pet-name {
+            font-size: 10px;
+            color: rgba(50, 45, 40, 0.7);
+            margin-top: 2px;
+            white-space: nowrap;
+            max-width: 64px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .pool-pet.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+            transform: scale(0.92);
+            border-color: rgba(200, 80, 80, 0.15);
+        }
+
+        .pool-pet.used::after {
+            content: '✕';
+            position: absolute;
+            font-size: 20px;
+            color: rgba(200, 80, 80, 0.3);
+        }
+
+        .pool-pet.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* 拖拽时的克隆体样式 */
+        .drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            width: 72px;
+            height: 85px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #d4af37;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            transform: translate(-50%, -50%);
+            transition: none;
+            gap: 2px;
+            padding: 4px;
+        }
+
+        .drag-ghost img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .drag-ghost .pet-name {
+            font-size: 10px;
+            color: rgba(50, 45, 40, 0.8);
+            margin-top: 2px;
+            white-space: nowrap;
+            max-width: 64px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .player-name-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1.5px solid rgba(160, 150, 140, 0.25);
+            color: inherit;
+            font-size: inherit;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 0 2px;
+            width: 80px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .player-name-input:focus {
+            border-bottom-color: rgba(212, 175, 55, 0.5);
+        }
+        .pick-group.player1 .player-name-input {
+            color: rgba(50, 130, 200, 0.9);
+        }
+        .pick-group.player2 .player-name-input {
+            color: rgba(200, 80, 80, 0.9);
+        }
+
+        /* ===== 底部控制栏 ===== */
+        .bp-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(180, 160, 140, 0.12);
+            flex-wrap: wrap;
+        }
+
+        .bp-controls button {
+            padding: 8px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: rgba(200, 190, 180, 0.2);
+            color: rgba(80, 70, 50, 0.6);
+            border: 1px solid rgba(180, 160, 140, 0.1);
+        }
+
+        .bp-controls button:hover:not(:disabled) {
+            background: rgba(212, 175, 55, 0.1);
+            color: #b8860b;
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+
+        .bp-controls button:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+        }
+
+        .bp-controls button.danger {
+            color: #d9534f;
+            border-color: rgba(217, 83, 79, 0.15);
+        }
+        .bp-controls button.danger:hover:not(:disabled) {
+            background: rgba(217, 83, 79, 0.08);
+            border-color: rgba(217, 83, 79, 0.2);
+        }
+
+        .bp-controls .status-msg {
+            color: rgba(80, 70, 50, 0.4);
+            font-size: 12px;
+            padding: 0 8px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 960px) {
+            .main-area {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .pick-group {
+                min-height: auto;
+            }
+            .pick-slots {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .pick-slot {
+                width: calc(33.33% - 4px);
+                min-height: 60px;
+            }
+            .ban-row {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .bp-container {
+                padding: 16px;
+            }
+            .bp-title h1 {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .ban-row {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+            .pick-slot {
+                width: calc(50% - 4px);
+            }
+            .bp-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .pool-pet {
+                width: 60px;
+                height: 72px;
+            }
+            .pool-pet img {
+                width: 40px;
+                height: 40px;
+            }
+            .ban-slot {
+                width: 40px;
+                height: 40px;
+            }
+            .ban-slot img {
+                width: 28px;
+                height: 28px;
+            }
+            .bp-controls {
+                gap: 10px;
+            }
+            .bp-controls button {
+                padding: 6px 16px;
+                font-size: 12px;
+            }
+        }
+
+        .pick-group.player2 .pick-slot.filled {
+            border-color: rgba(200, 80, 80, 0.2);
+            background: rgba(200, 80, 80, 0.04);
+        }
+        .pick-group.player2 .pick-label .badge {
+            background: rgba(200, 80, 80, 0.08);
+            color: rgba(200, 80, 80, 0.5);
+        }
+
+        .pick-group.player1 .pick-slot.filled {
+            border-color: rgba(50, 130, 200, 0.2);
+            background: rgba(50, 130, 200, 0.04);
+        }
+        .pick-group.player1 .pick-label .badge {
+            background: rgba(50, 130, 200, 0.08);
+            color: rgba(50, 130, 200, 0.5);
+        }
+
+        /* 拖拽目标高亮 */
+        .drop-target {
+            border-color: #d4af37 !important;
+            background: rgba(212, 175, 55, 0.12) !important;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="bp-container" id="app">
+        <!-- ===== 顶部标题 ===== -->
+        <div class="bp-header">
+            <div class="bp-title">
+                <h1>⚔️ 洛克BP</h1>
+                <span class="subtitle">│  6v6 + 公ban</span>
+            </div>
+            <div style="color: rgba(80,70,50,0.35); font-size:12px;">拖拽宠物到任意槽位</div>
+        </div>
+
+        <!-- ===== Ban位行：三列 ===== -->
+        <div class="ban-row">
+            <div class="ban-group" data-group="p1-ban">
+                <div class="ban-label">
+                    <span id="banLabel1">🔵 玩家1 Ban位</span>
+                    <span class="count" id="banCount1">0 / 4</span>
+                </div>
+                <div class="ban-slots" id="banSlots1">
+                    <div class="ban-slot" data-index="0"></div>
+                    <div class="ban-slot" data-index="1"></div>
+                    <div class="ban-slot" data-index="2"></div>
+                    <div class="ban-slot" data-index="3"></div>
+                </div>
+            </div>
+
+            <div class="ban-group public" data-group="pub-ban">
+                <div class="ban-label">
+                    <span>⭐ 公ban</span>
+                    <span class="count" id="banCountPub">0 / 2</span>
+                </div>
+                <div class="ban-slots" id="banSlotsPub">
+                    <div class="ban-slot" data-index="0"></div>
+                    <div class="ban-slot" data-index="1"></div>
+                </div>
+            </div>
+
+            <div class="ban-group" data-group="p2-ban">
+                <div class="ban-label">
+                    <span id="banLabel2">🔴 玩家2 Ban位</span>
+                    <span class="count" id="banCount2">0 / 4</span>
+                </div>
+                <div class="ban-slots" id="banSlots2">
+                    <div class="ban-slot" data-index="0"></div>
+                    <div class="ban-slot" data-index="1"></div>
+                    <div class="ban-slot" data-index="2"></div>
+                    <div class="ban-slot" data-index="3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 主区域 ===== -->
+        <div class="main-area">
+            <div class="pick-group player1" data-group="p1-pick">
+                <div class="pick-label">
+                    <span>
+                        <input type="text" class="player-name-input" id="p1NameInput" value="玩家1" maxlength="10">
+                    </span>
+                    <span class="badge" id="pickCount1">0 / 6</span>
+                </div>
+                <div class="pick-slots" id="pickSlots1">
+                    <div class="pick-slot" data-index="0"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="1"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="2"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="3"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="4"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="5"><span class="empty-hint">—</span></div>
+                </div>
+            </div>
+
+            <div class="pet-pool" id="petPool">
+                <div class="pool-title">
+                    <span>🐾 宠物池</span>
+                    <span class="remain" id="remainCount">剩余: 0</span>
+                </div>
+                <div id="poolGroups"></div>
+            </div>
+
+            <div class="pick-group player2" data-group="p2-pick">
+                <div class="pick-label">
+                    <span>
+                        <input type="text" class="player-name-input" id="p2NameInput" value="玩家2" maxlength="10">
+                    </span>
+                    <span class="badge" id="pickCount2">0 / 6</span>
+                </div>
+                <div class="pick-slots" id="pickSlots2">
+                    <div class="pick-slot" data-index="0"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="1"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="2"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="3"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="4"><span class="empty-hint">—</span></div>
+                    <div class="pick-slot" data-index="5"><span class="empty-hint">—</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 底部控制 ===== -->
+        <div class="bp-controls">
+            <button class="danger" id="btnReset">⟳ 重置</button>
+            <button id="btnUndo" disabled>↩ 撤回</button>
+            <span class="status-msg" id="statusMsg">拖拽宠物到目标槽位</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  1. 宠物数据（已替换为最新数据）
+        // ============================================================
+        const PETS = [
+  {
+    "id": "m5-1",
+    "name": "巴哈姆特",
+    "magic": 5,
+    "aliases": [
+      "巴哈姆特"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m5-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3172-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2548172",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m5-2",
+    "name": "海芙约忒",
+    "magic": 5,
+    "aliases": [
+      "海芙约忒"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m5-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3092-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533395",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-1",
+    "name": "塞勒姆",
+    "magic": 4,
+    "aliases": [
+      "塞勒姆"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3362-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2899717",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-2",
+    "name": "弥迹辛西娅",
+    "magic": 4,
+    "aliases": [
+      "弥迹辛西娅"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3262-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2677807",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-3",
+    "name": "翡翠皇后",
+    "magic": 4,
+    "aliases": [
+      "翡翠皇后"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-3.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3152-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2544787",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-4",
+    "name": "戮影龙皇",
+    "magic": 4,
+    "aliases": [
+      "戮影龙皇"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-4.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3019-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533298",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-5",
+    "name": "诺格佩勒",
+    "magic": 4,
+    "aliases": [
+      "诺格佩勒"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-5.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2962-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532915",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-6",
+    "name": "美狄亚",
+    "magic": 4,
+    "aliases": [
+      "美狄亚"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-6.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2928-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532770",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-7",
+    "name": "伊瑟拉",
+    "magic": 4,
+    "aliases": [
+      "伊瑟拉"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-7.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2920-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532709",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-8",
+    "name": "圣湮伊莱娜",
+    "magic": 4,
+    "aliases": [
+      "圣湮伊莱娜"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-8.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2810-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530324",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m4-9",
+    "name": "破晓凯瑞尔",
+    "magic": 4,
+    "aliases": [
+      "破晓凯瑞尔"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m4-9.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2585-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529700",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-1",
+    "name": "艾克斯菲特",
+    "magic": 3,
+    "aliases": [
+      "艾克斯菲特"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3409-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2912327",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-2",
+    "name": "厄影潘多拉",
+    "magic": 3,
+    "aliases": [
+      "厄影潘多拉"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3407-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2911209",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-3",
+    "name": "泷景",
+    "magic": 3,
+    "aliases": [
+      "泷景"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-3.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3380-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2908307",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-4",
+    "name": "赑瑞玄龟",
+    "magic": 3,
+    "aliases": [
+      "赑瑞玄龟"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-4.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3361-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2901620",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-5",
+    "name": "墨菲斯",
+    "magic": 3,
+    "aliases": [
+      "墨菲斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-5.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3338-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2887691",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-6",
+    "name": "赛诺拉斯",
+    "magic": 3,
+    "aliases": [
+      "赛诺拉斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-6.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3309-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2885057",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-7",
+    "name": "艾莉丝贝斯",
+    "magic": 3,
+    "aliases": [
+      "艾莉丝贝斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-7.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3308-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2783967",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-8",
+    "name": "乾坤武圣",
+    "magic": 3,
+    "aliases": [
+      "乾坤武圣"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-8.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3316-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2696491",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-9",
+    "name": "希柯莉",
+    "magic": 3,
+    "aliases": [
+      "希柯莉"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-9.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3285-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2683088",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-10",
+    "name": "琴澜鸣鹤",
+    "magic": 3,
+    "aliases": [
+      "琴澜鸣鹤"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-10.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3266-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2680707",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-11",
+    "name": "俄尔普斯",
+    "magic": 3,
+    "aliases": [
+      "俄尔普斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-11.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3244-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2669721",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-12",
+    "name": "钧霆奥德诺",
+    "magic": 3,
+    "aliases": [
+      "钧霆奥德诺"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-12.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3220-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2564712",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-13",
+    "name": "安麦伦",
+    "magic": 3,
+    "aliases": [
+      "安麦伦"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-13.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3226-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2558292",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-14",
+    "name": "伊西希斯",
+    "magic": 3,
+    "aliases": [
+      "伊西希斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-14.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3219-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2558291",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-15",
+    "name": "卡利俄珀",
+    "magic": 3,
+    "aliases": [
+      "卡利俄珀"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-15.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3201-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2553980",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-16",
+    "name": "砾尊狂狮",
+    "magic": 3,
+    "aliases": [
+      "砾尊狂狮"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-16.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3159-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2546620",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-17",
+    "name": "阿尔贝西",
+    "magic": 3,
+    "aliases": [
+      "阿尔贝西"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-17.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3164-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2539181",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-18",
+    "name": "御械女帝",
+    "magic": 3,
+    "aliases": [
+      "御械女帝"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-18.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3124-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533446",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-19",
+    "name": "赫苏",
+    "magic": 3,
+    "aliases": [
+      "赫苏"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-19.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3138-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533472",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-20",
+    "name": "谟玛乌图",
+    "magic": 3,
+    "aliases": [
+      "谟玛乌图"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-20.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3117-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533398",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-21",
+    "name": "青钟翾狐",
+    "magic": 3,
+    "aliases": [
+      "青钟翾狐"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-21.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3081-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533370",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-22",
+    "name": "圣裁战龙王",
+    "magic": 3,
+    "aliases": [
+      "圣裁战龙王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-22.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3039-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533271",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-23",
+    "name": "云举瑶鹿",
+    "magic": 3,
+    "aliases": [
+      "云举瑶鹿"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-23.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3018-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533171",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-24",
+    "name": "煌明火王",
+    "magic": 3,
+    "aliases": [
+      "煌明火王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-24.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2949-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532830",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-25",
+    "name": "噬元械龙",
+    "magic": 3,
+    "aliases": [
+      "噬元械龙"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-25.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2862-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532714",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-26",
+    "name": "雪莉再生机",
+    "magic": 3,
+    "aliases": [
+      "雪莉再生机"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-26.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2930-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532711",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-27",
+    "name": "凌羽圣翼王",
+    "magic": 3,
+    "aliases": [
+      "凌羽圣翼王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-27.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2889-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532363",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-28",
+    "name": "乾镜双凤",
+    "magic": 3,
+    "aliases": [
+      "乾镜双凤"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-28.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2030-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2531567",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-29",
+    "name": "光明孔雀女王",
+    "magic": 3,
+    "aliases": [
+      "光明孔雀女王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-29.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2824-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530384",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-30",
+    "name": "汐纱水王",
+    "magic": 3,
+    "aliases": [
+      "汐纱水王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-30.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2696-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529961",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-31",
+    "name": "革凡普王",
+    "magic": 3,
+    "aliases": [
+      "革凡普王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-31.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2689-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529956",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-32",
+    "name": "混沌石王",
+    "magic": 3,
+    "aliases": [
+      "混沌石王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-32.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2456-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529209",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-33",
+    "name": "踏云蹦影",
+    "magic": 3,
+    "aliases": [
+      "踏云蹦影"
+    ],
+    "category": "常规",
+    "avatarStatus": "待同步",
+    "avatarUrl": "/pets/m3-33.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2371-.png",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-34",
+    "name": "圣萌王者",
+    "magic": 3,
+    "aliases": [
+      "圣萌王者"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-34.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2396-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529147",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-35",
+    "name": "毒王",
+    "magic": 3,
+    "aliases": [
+      "毒王"
+    ],
+    "category": "常规",
+    "avatarStatus": "待同步",
+    "avatarUrl": "/pets/m3-35.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2379-.png",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-36",
+    "name": "光之雪莉",
+    "magic": 3,
+    "aliases": [
+      "光之雪莉"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-36.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/11650-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529135",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-37",
+    "name": "朝曦冰夕",
+    "magic": 3,
+    "aliases": [
+      "朝曦冰夕"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-37.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2315-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529036",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m3-38",
+    "name": "龙之飞儿/沌之飞儿",
+    "magic": 3,
+    "aliases": [
+      "龙之飞儿",
+      "沌之飞儿"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m3-38.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2302-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529036",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-1",
+    "name": "拂影游侠",
+    "magic": 2,
+    "aliases": [
+      "拂影游侠"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3374-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2908303",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-2",
+    "name": "瑟雷纳斯",
+    "magic": 2,
+    "aliases": [
+      "瑟雷纳斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3355-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2891490",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-3",
+    "name": "独角金颀",
+    "magic": 2,
+    "aliases": [
+      "独角金颀"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-3.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3332-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2886351",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-4",
+    "name": "破东风孔明",
+    "magic": 2,
+    "aliases": [
+      "破东风孔明"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-4.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3330-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2886040",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-5",
+    "name": "戟叶蓼",
+    "magic": 2,
+    "aliases": [
+      "戟叶蓼"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-5.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3298-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2688251",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-6",
+    "name": "华魇萌少",
+    "magic": 2,
+    "aliases": [
+      "华魇萌少"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-6.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3297-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2687709",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-7",
+    "name": "螣岚",
+    "magic": 2,
+    "aliases": [
+      "螣岚"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-7.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3277-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2681044",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-8",
+    "name": "玄光锦瑶",
+    "magic": 2,
+    "aliases": [
+      "玄光锦瑶"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-8.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3260-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2674692",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-9",
+    "name": "炜煌雷诺",
+    "magic": 2,
+    "aliases": [
+      "炜煌雷诺"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-9.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3225-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2560479",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-10",
+    "name": "凝魂恶豹",
+    "magic": 2,
+    "aliases": [
+      "凝魂恶豹"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-10.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3174-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2541343",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-11",
+    "name": "钢铁加鲁鲁兽",
+    "magic": 2,
+    "aliases": [
+      "钢铁加鲁鲁兽"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-11.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3116-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2534527",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-12",
+    "name": "战斗暴龙兽",
+    "magic": 2,
+    "aliases": [
+      "战斗暴龙兽"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-12.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3103-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2534527",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-13",
+    "name": "霆霓",
+    "magic": 2,
+    "aliases": [
+      "霆霓"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-13.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3144-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533492",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-14",
+    "name": "渚雷",
+    "magic": 2,
+    "aliases": [
+      "渚雷"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-14.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3139-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533472",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-15",
+    "name": "灵瑞朱雀",
+    "magic": 2,
+    "aliases": [
+      "灵瑞朱雀"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-15.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3031-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533176",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-16",
+    "name": "寂夜魔王",
+    "magic": 2,
+    "aliases": [
+      "寂夜魔王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-16.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2980-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532916",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-17",
+    "name": "西塔尔",
+    "magic": 2,
+    "aliases": [
+      "西塔尔"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-17.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2956-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532799",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-18",
+    "name": "史小韵",
+    "magic": 2,
+    "aliases": [
+      "史小韵"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-18.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2908-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532676",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-19",
+    "name": "暗黑孔雀女王",
+    "magic": 2,
+    "aliases": [
+      "暗黑孔雀女王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-19.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2825-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530384",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-20",
+    "name": "破启幽王",
+    "magic": 2,
+    "aliases": [
+      "破启幽王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-20.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2806-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530313",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-21",
+    "name": "战钺蟠龙",
+    "magic": 2,
+    "aliases": [
+      "战钺蟠龙"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-21.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2768-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530299",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-22",
+    "name": "豪炎战神/吉禄豪炎",
+    "magic": 2,
+    "aliases": [
+      "豪炎战神",
+      "吉禄豪炎"
+    ],
+    "category": "常规",
+    "avatarStatus": "待同步",
+    "avatarUrl": "/pets/m2-22.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2402-.png",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-23",
+    "name": "凯路斯",
+    "magic": 2,
+    "aliases": [
+      "凯路斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-23.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2661-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529917",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-24",
+    "name": "辉月土王",
+    "magic": 2,
+    "aliases": [
+      "辉月土王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-24.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2559-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529613",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-25",
+    "name": "天极圣雷王",
+    "magic": 2,
+    "aliases": [
+      "天极圣雷王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-25.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2549-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529610",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-26",
+    "name": "灵息帕尔/溯夜帕尔",
+    "magic": 2,
+    "aliases": [
+      "灵息帕尔",
+      "溯夜帕尔"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-26.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2528-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529393",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-27",
+    "name": "圣灵草王",
+    "magic": 2,
+    "aliases": [
+      "圣灵草王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-27.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2449-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529240",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-28",
+    "name": "艾瑟丽贝",
+    "magic": 2,
+    "aliases": [
+      "艾瑟丽贝"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-28.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2427-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529189",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-29",
+    "name": "蹦天御尊",
+    "magic": 2,
+    "aliases": [
+      "蹦天御尊"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-29.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2419-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529147",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-30",
+    "name": "桃夭",
+    "magic": 2,
+    "aliases": [
+      "桃夭"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-30.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2991-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532943",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-31",
+    "name": "立春",
+    "magic": 2,
+    "aliases": [
+      "立春"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-31.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2344-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529170",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-32",
+    "name": "普之舜舜/禁之舜舜",
+    "magic": 2,
+    "aliases": [
+      "普之舜舜",
+      "禁之舜舜"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m2-32.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2297-.png",
+    "analysisUrl": null,
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m2-33",
+    "name": "柴可司机",
+    "magic": 2,
+    "aliases": [
+      "柴可司机"
+    ],
+    "category": "常规",
+    "avatarStatus": "待同步",
+    "avatarUrl": "/pets/m2-33.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2060-.png",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-1",
+    "name": "爱丽赛亚",
+    "magic": 1,
+    "aliases": [
+      "爱丽赛亚"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3317-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2696487",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-2",
+    "name": "织魇帅帅",
+    "magic": 1,
+    "aliases": [
+      "织魇帅帅"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3306-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2689689",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-3",
+    "name": "雾影灵仙",
+    "magic": 1,
+    "aliases": [
+      "雾影灵仙"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-3.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3294-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2687098",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-4",
+    "name": "晨曦凯露儿",
+    "magic": 1,
+    "aliases": [
+      "晨曦凯露儿"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-4.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2629-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529995",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-5",
+    "name": "阿努拉尼",
+    "magic": 1,
+    "aliases": [
+      "阿努拉尼"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-5.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3004-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532948",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-6",
+    "name": "赤翼牦牛",
+    "magic": 1,
+    "aliases": [
+      "赤翼牦牛"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-6.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3238-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2667076",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-7",
+    "name": "虹霞翼虫",
+    "magic": 1,
+    "aliases": [
+      "虹霞翼虫"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-7.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3141-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533490",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-8",
+    "name": "赛施尔",
+    "magic": 1,
+    "aliases": [
+      "赛施尔"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-8.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2542-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529313",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-9",
+    "name": "迪斯佩尔",
+    "magic": 1,
+    "aliases": [
+      "迪斯佩尔"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-9.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3406-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2910247",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-10",
+    "name": "苍翼天使",
+    "magic": 1,
+    "aliases": [
+      "苍翼天使"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-10.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2235-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2891866",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-11",
+    "name": "恶灵总长",
+    "magic": 1,
+    "aliases": [
+      "恶灵总长"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-11.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3366-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2899714",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-12",
+    "name": "大鼻子叮咚",
+    "magic": 1,
+    "aliases": [
+      "大鼻子叮咚"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-12.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3400-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2909991",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-13",
+    "name": "冥光绮涟",
+    "magic": 1,
+    "aliases": [
+      "冥光绮涟"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-13.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3390-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2908736",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-14",
+    "name": "黑小虎",
+    "magic": 1,
+    "aliases": [
+      "黑小虎"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-14.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3261-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2681041",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-15",
+    "name": "蜃海齿鲨",
+    "magic": 1,
+    "aliases": [
+      "蜃海齿鲨"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-15.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3166-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2541343",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-16",
+    "name": "幻梦天使",
+    "magic": 1,
+    "aliases": [
+      "幻梦天使"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-16.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3351-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2891489",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-17",
+    "name": "蓝漪水灵/福熙水灵",
+    "magic": 1,
+    "aliases": [
+      "蓝漪水灵",
+      "福熙水灵"
+    ],
+    "category": "常规",
+    "avatarStatus": "待同步",
+    "avatarUrl": "/pets/m1-17.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2631-.png",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-18",
+    "name": "戴安娜",
+    "magic": 1,
+    "aliases": [
+      "戴安娜"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-18.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2665-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530220",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-19",
+    "name": "雷嘉",
+    "magic": 1,
+    "aliases": [
+      "雷嘉"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-19.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2817-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2531541",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-20",
+    "name": "倒牛奶柴可",
+    "magic": 1,
+    "aliases": [
+      "倒牛奶柴可"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-20.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3403-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2909795",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-21",
+    "name": "火云邪神",
+    "magic": 1,
+    "aliases": [
+      "火云邪神"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-21.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2579-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530070",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-22",
+    "name": "圣域白狐",
+    "magic": 1,
+    "aliases": [
+      "圣域白狐"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-22.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2431-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529192",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-23",
+    "name": "皓月洛神",
+    "magic": 1,
+    "aliases": [
+      "皓月洛神"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-23.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3381-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529192",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-24",
+    "name": "橙阳庆灵",
+    "magic": 1,
+    "aliases": [
+      "橙阳庆灵"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-24.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3349-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2890025",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-25",
+    "name": "梦魇紫罗",
+    "magic": 1,
+    "aliases": [
+      "梦魇紫罗"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-25.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2792-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530270",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-26",
+    "name": "轰鼓元帅",
+    "magic": 1,
+    "aliases": [
+      "轰鼓元帅"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-26.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3249-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2673193",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-27",
+    "name": "岩鳞蜥蜴侠",
+    "magic": 1,
+    "aliases": [
+      "岩鳞蜥蜴侠"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-27.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3299-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2687710",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-28",
+    "name": "镇煞玄武",
+    "magic": 1,
+    "aliases": [
+      "镇煞玄武"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-28.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3021-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533091",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-29",
+    "name": "逆天玄武",
+    "magic": 1,
+    "aliases": [
+      "逆天玄武"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-29.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2584-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529976",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-30",
+    "name": "揽月圣女",
+    "magic": 1,
+    "aliases": [
+      "揽月圣女"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-30.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2675-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529761",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-31",
+    "name": "神煜修罗王",
+    "magic": 1,
+    "aliases": [
+      "神煜修罗王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-31.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2791-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530220",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-32",
+    "name": "阿尔戈斯",
+    "magic": 1,
+    "aliases": [
+      "阿尔戈斯"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-32.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2544-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529503",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-33",
+    "name": "西圣兽白鄂/元夕白鄂",
+    "magic": 1,
+    "aliases": [
+      "西圣兽白鄂",
+      "元夕白鄂"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-33.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2330-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529113",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-34",
+    "name": "灭却战龙王",
+    "magic": 1,
+    "aliases": [
+      "灭却战龙王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-34.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2290-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529036",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-35",
+    "name": "协律迪莫",
+    "magic": 1,
+    "aliases": [
+      "协律迪莫"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-35.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3313-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2783964",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-36",
+    "name": "权天使·肆意",
+    "magic": 1,
+    "aliases": [
+      "权天使·肆意"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-36.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2985-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532963",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-37",
+    "name": "路西法",
+    "magic": 1,
+    "aliases": [
+      "路西法"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-37.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3307-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2696476",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-38",
+    "name": "噬魂战龙王",
+    "magic": 1,
+    "aliases": [
+      "噬魂战龙王"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-38.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2328-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529102",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-39",
+    "name": "梅花德尔勒",
+    "magic": 1,
+    "aliases": [
+      "梅花德尔勒"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-39.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2982-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2532925",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-40",
+    "name": "滟媚迪娜",
+    "magic": 1,
+    "aliases": [
+      "滟媚迪娜"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-40.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3142-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533491",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-41",
+    "name": "超强水晶巨人",
+    "magic": 1,
+    "aliases": [
+      "超强水晶巨人"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-41.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3300-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2689684",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-1",
+    "name": "幻鸩毒王",
+    "magic": 1,
+    "aliases": [
+      "幻鸩毒王"
+    ],
+    "category": "常规",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-1.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2379-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529170",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-2",
+    "name": "冬瓜吨吨",
+    "magic": 1,
+    "aliases": [
+      "冬瓜吨吨"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-2.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2881-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2890025",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-3",
+    "name": "星耀独角兽",
+    "magic": 1,
+    "aliases": [
+      "星耀独角兽"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-3.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2348-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529074",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-4",
+    "name": "潞虹",
+    "magic": 1,
+    "aliases": [
+      "潞虹"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-4.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3130-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533445",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-5",
+    "name": "立夏",
+    "magic": 1,
+    "aliases": [
+      "立夏"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-5.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2335-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529051",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-6",
+    "name": "硕果格兰",
+    "magic": 1,
+    "aliases": [
+      "硕果格兰"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-6.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3171-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2539216",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-7",
+    "name": "荷裳仙灵",
+    "magic": 1,
+    "aliases": [
+      "荷裳仙灵"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-7.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3368-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2899716",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-8",
+    "name": "娑儿",
+    "magic": 1,
+    "aliases": [
+      "娑儿"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-8.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3109-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2533396",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-9",
+    "name": "绿藤协灵",
+    "magic": 1,
+    "aliases": [
+      "绿藤协灵"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-9.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3339-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2889096",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-10",
+    "name": "空灵糖心",
+    "magic": 1,
+    "aliases": [
+      "空灵糖心"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-10.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3257-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2673150",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-11",
+    "name": "激斗奎因",
+    "magic": 1,
+    "aliases": [
+      "激斗奎因"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-11.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/3167-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2541346",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-12",
+    "name": "王牌灵猫",
+    "magic": 1,
+    "aliases": [
+      "王牌灵猫"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-12.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2887-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2531542",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-13",
+    "name": "超凡蔴球",
+    "magic": 1,
+    "aliases": [
+      "超凡蔴球"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-13.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2527-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529248",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-14",
+    "name": "赫斯提亚",
+    "magic": 1,
+    "aliases": [
+      "赫斯提亚"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-14.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/10008-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529113",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-15",
+    "name": "极丶魔尾战猫",
+    "magic": 1,
+    "aliases": [
+      "极丶魔尾战猫"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-15.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2588-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529465",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-16",
+    "name": "斗战胜佛",
+    "magic": 1,
+    "aliases": [
+      "斗战胜佛"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-16.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2655-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529731",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-17",
+    "name": "超大双筒丁丁",
+    "magic": 1,
+    "aliases": [
+      "超大双筒丁丁"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-17.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2900-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2889964",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-18",
+    "name": "极丶先锋君主",
+    "magic": 1,
+    "aliases": [
+      "极丶先锋君主"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-18.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2374-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529051",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-19",
+    "name": "伊冥",
+    "magic": 1,
+    "aliases": [
+      "伊冥"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-19.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2628-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529994",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-20",
+    "name": "鬼魅雪影",
+    "magic": 1,
+    "aliases": [
+      "鬼魅雪影"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-20.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2578-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2530219",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  },
+  {
+    "id": "m1-extra-21",
+    "name": "耀阳土王",
+    "magic": 1,
+    "aliases": [
+      "耀阳土王"
+    ],
+    "category": "偏向体系",
+    "avatarStatus": "已同步",
+    "avatarUrl": "/pets/m1-extra-21.png",
+    "imageSourceUrl": "https://res.17roco.qq.com/res/combat/icons/2560-.png",
+    "analysisUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=redirect&goto=findpost&ptid=152843&pid=2529620",
+    "sourceUrl": "https://17roco.gamebbs.qq.com/forum.php?mod=viewthread&tid=159132&extra=page%3D1"
+  }
+];
+
+        // ============================================================
+        //  2. 状态管理（无步骤，纯拖拽）
+        // ============================================================
+        const state = {
+            allPets: PETS.map(p => ({ ...p })),
+            location: {},
+            p1: { bans: [], picks: [] },
+            p2: { bans: [], picks: [] },
+            pubBans: [],
+            history: [],
+        };
+
+        function initLocations() {
+            state.location = {};
+            state.allPets.forEach(p => {
+                state.location[p.id] = { type: 'pool' };
+            });
+            state.p1.bans = [];
+            state.p1.picks = [];
+            state.p2.bans = [];
+            state.p2.picks = [];
+            state.pubBans = [];
+            state.history = [];
+        }
+        initLocations();
+
+        // ============================================================
+        //  3. DOM 引用
+        // ============================================================
+        const $ = id => document.getElementById(id);
+        const elBanSlots1 = $('banSlots1');
+        const elBanSlots2 = $('banSlots2');
+        const elBanSlotsPub = $('banSlotsPub');
+        const elPickSlots1 = $('pickSlots1');
+        const elPickSlots2 = $('pickSlots2');
+        const elPoolGroups = $('poolGroups');
+        const elRemainCount = $('remainCount');
+        const elBanCount1 = $('banCount1');
+        const elBanCount2 = $('banCount2');
+        const elBanCountPub = $('banCountPub');
+        const elPickCount1 = $('pickCount1');
+        const elPickCount2 = $('pickCount2');
+        const elStatusMsg = $('statusMsg');
+        const elBtnUndo = $('btnUndo');
+        const elBtnReset = $('btnReset');
+        const elP1NameInput = $('p1NameInput');
+        const elP2NameInput = $('p2NameInput');
+        const elBanLabel1 = $('banLabel1');
+        const elBanLabel2 = $('banLabel2');
+
+        // ============================================================
+        //  4. 辅助函数
+        // ============================================================
+        function getPet(id) {
+            return state.allPets.find(p => p.id === id);
+        }
+
+        function isPetInPool(petId) {
+            return state.location[petId] && state.location[petId].type === 'pool';
+        }
+
+        function getPetLocation(petId) {
+            return state.location[petId] || null;
+        }
+
+        function getSlotLimit(type) {
+            if (type === 'p1-ban' || type === 'p2-ban') return 4;
+            if (type === 'pub-ban') return 2;
+            if (type === 'p1-pick' || type === 'p2-pick') return 6;
+            return 0;
+        }
+
+        function getSlotCount(type) {
+            if (type === 'p1-ban') return state.p1.bans.length;
+            if (type === 'p2-ban') return state.p2.bans.length;
+            if (type === 'pub-ban') return state.pubBans.length;
+            if (type === 'p1-pick') return state.p1.picks.length;
+            if (type === 'p2-pick') return state.p2.picks.length;
+            return 0;
+        }
+
+        function getSlotArray(type) {
+            if (type === 'p1-ban') return state.p1.bans;
+            if (type === 'p2-ban') return state.p2.bans;
+            if (type === 'pub-ban') return state.pubBans;
+            if (type === 'p1-pick') return state.p1.picks;
+            if (type === 'p2-pick') return state.p2.picks;
+            return null;
+        }
+
+        function canPlace(petId, targetType) {
+            if (!petId) return false;
+            if (isPetInPool(petId) === false && getPetLocation(petId)?.type === targetType) {
+                return false;
+            }
+            const limit = getSlotLimit(targetType);
+            const count = getSlotCount(targetType);
+            if (count >= limit) return false;
+            if (!isPetInPool(petId) && getPetLocation(petId)?.type !== targetType) {
+                return false;
+            }
+            return true;
+        }
+
+        function placePet(petId, targetType, index) {
+            const oldLoc = getPetLocation(petId);
+            if (oldLoc && oldLoc.type !== 'pool') {
+                const arr = getSlotArray(oldLoc.type);
+                if (arr) {
+                    const idx = arr.indexOf(petId);
+                    if (idx > -1) arr.splice(idx, 1);
+                }
+            }
+            const arr = getSlotArray(targetType);
+            if (!arr) return false;
+            if (index === undefined || index >= arr.length) {
+                arr.push(petId);
+            } else {
+                arr.splice(index, 0, petId);
+            }
+            state.location[petId] = { type: targetType, index: arr.indexOf(petId) };
+            return true;
+        }
+
+        // ============================================================
+        //  5. 拖拽逻辑
+        // ============================================================
+
+        let dragData = null;
+
+        function initDragDrop() {
+            document.addEventListener('dragstart', (e) => {
+                const petEl = e.target.closest('.pool-pet');
+                if (!petEl || petEl.classList.contains('used')) {
+                    e.preventDefault();
+                    return;
+                }
+                const petId = parseInt(petEl.dataset.petId);
+                // 修正：petId 可能是字符串，但 dataset 返回字符串，PETS 中 id 是字符串
+                // 为了兼容，我们直接使用 dataset.petId 作为字符串
+                const petIdStr = petEl.dataset.petId;
+                if (!isPetInPool(petIdStr)) {
+                    e.preventDefault();
+                    return;
+                }
+                dragData = { petId: petIdStr };
+                e.dataTransfer.setData('text/plain', petIdStr);
+                e.dataTransfer.effectAllowed = 'move';
+                const ghost = petEl.cloneNode(true);
+                ghost.classList.add('drag-ghost');
+                ghost.style.position = 'fixed';
+                ghost.style.pointerEvents = 'none';
+                ghost.style.top = '-1000px';
+                document.body.appendChild(ghost);
+                e.dataTransfer.setDragImage(ghost, 36, 42);
+                setTimeout(() => document.body.removeChild(ghost), 0);
+                petEl.classList.add('dragging');
+            });
+
+            document.addEventListener('dragend', (e) => {
+                document.querySelectorAll('.pool-pet.dragging').forEach(el => el.classList.remove('dragging'));
+                document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                dragData = null;
+            });
+
+            const dropTargets = document.querySelectorAll('.ban-slot, .pick-slot, .ban-group, .pick-group');
+            dropTargets.forEach(target => {
+                target.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (target.classList.contains('ban-slot') || target.classList.contains('pick-slot')) {
+                        target.classList.add('drop-target');
+                    } else {
+                        target.classList.add('drag-over');
+                    }
+                });
+                target.addEventListener('dragleave', (e) => {
+                    target.classList.remove('drop-target');
+                    target.classList.remove('drag-over');
+                });
+                target.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    target.classList.remove('drop-target');
+                    target.classList.remove('drag-over');
+                    const petId = e.dataTransfer.getData('text/plain');
+                    if (!petId || !dragData) return;
+                    let targetType = null;
+                    let index = -1;
+                    if (target.classList.contains('ban-slot') || target.classList.contains('pick-slot')) {
+                        const parentSlots = target.parentElement;
+                        const slots = parentSlots.querySelectorAll('.ban-slot, .pick-slot');
+                        const idx = Array.from(slots).indexOf(target);
+                        if (idx === -1) return;
+                        const group = target.closest('.ban-group') || target.closest('.pick-group');
+                        if (!group) return;
+                        const groupType = group.dataset.group;
+                        if (groupType === 'p1-ban') targetType = 'p1-ban';
+                        else if (groupType === 'p2-ban') targetType = 'p2-ban';
+                        else if (groupType === 'pub-ban') targetType = 'pub-ban';
+                        else if (groupType === 'p1-pick') targetType = 'p1-pick';
+                        else if (groupType === 'p2-pick') targetType = 'p2-pick';
+                        else return;
+                        const arr = getSlotArray(targetType);
+                        if (arr && idx < arr.length && arr[idx] !== undefined) {
+                            elStatusMsg.textContent = '⚠️ 该槽位已被占用';
+                            return;
+                        }
+                        index = idx;
+                    } else {
+                        const group = target.closest('.ban-group') || target.closest('.pick-group');
+                        if (!group) return;
+                        const groupType = group.dataset.group;
+                        if (groupType === 'p1-ban') targetType = 'p1-ban';
+                        else if (groupType === 'p2-ban') targetType = 'p2-ban';
+                        else if (groupType === 'pub-ban') targetType = 'pub-ban';
+                        else if (groupType === 'p1-pick') targetType = 'p1-pick';
+                        else if (groupType === 'p2-pick') targetType = 'p2-pick';
+                        else return;
+                        const arr = getSlotArray(targetType);
+                        if (!arr) return;
+                        const limit = getSlotLimit(targetType);
+                        for (let i = 0; i < limit; i++) {
+                            if (i >= arr.length || arr[i] === undefined) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        if (index === -1) {
+                            elStatusMsg.textContent = '⚠️ 该组已满';
+                            return;
+                        }
+                    }
+
+                    if (!canPlace(petId, targetType)) {
+                        elStatusMsg.textContent = '⚠️ 无法放置，请检查容量或宠物是否已被使用';
+                        return;
+                    }
+
+                    const oldLoc = getPetLocation(petId);
+                    state.history.push({
+                        petId: petId,
+                        from: oldLoc ? { ...oldLoc } : null,
+                        to: { type: targetType, index: index },
+                    });
+
+                    const success = placePet(petId, targetType, index);
+                    if (success) {
+                        elStatusMsg.textContent = `✅ 放置 ${getPet(petId).name} 到 ${targetType}`;
+                        elBtnUndo.disabled = false;
+                        renderAll();
+                    } else {
+                        elStatusMsg.textContent = '❌ 放置失败';
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        //  6. 撤回 & 重置
+        // ============================================================
+
+        function undo() {
+            if (state.history.length === 0) {
+                elStatusMsg.textContent = '⚠️ 没有可撤回的操作';
+                return;
+            }
+            const last = state.history.pop();
+            const petId = last.petId;
+            const currentLoc = getPetLocation(petId);
+            if (currentLoc && currentLoc.type !== 'pool') {
+                const arr = getSlotArray(currentLoc.type);
+                if (arr) {
+                    const idx = arr.indexOf(petId);
+                    if (idx > -1) arr.splice(idx, 1);
+                }
+            }
+            if (last.from) {
+                const from = last.from;
+                if (from.type === 'pool') {
+                    state.location[petId] = { type: 'pool' };
+                } else {
+                    const arr = getSlotArray(from.type);
+                    if (arr) {
+                        if (from.index !== undefined && from.index <= arr.length) {
+                            arr.splice(from.index, 0, petId);
+                        } else {
+                            arr.push(petId);
+                        }
+                        state.location[petId] = { type: from.type, index: arr.indexOf(petId) };
+                    } else {
+                        state.location[petId] = null;
+                    }
+                }
+            } else {
+                state.location[petId] = null;
+            }
+            elStatusMsg.textContent = `↩ 撤回 ${getPet(petId).name}`;
+            if (state.history.length === 0) elBtnUndo.disabled = true;
+            renderAll();
+        }
+
+        function resetAll() {
+            initLocations();
+            state.history = [];
+            elBtnUndo.disabled = true;
+            elStatusMsg.textContent = '🔄 已重置';
+            renderAll();
+        }
+
+        // ============================================================
+        //  7. 渲染
+        // ============================================================
+
+        function renderAll() {
+            renderBanSlots();
+            renderPickSlots();
+            renderPool();
+            renderCounts();
+            updatePlayerNameLabels();
+        }
+
+        function renderBanSlots() {
+            renderBanGroup(elBanSlots1, state.p1.bans, false);
+            renderBanGroup(elBanSlots2, state.p2.bans, false);
+            renderBanGroup(elBanSlotsPub, state.pubBans, true);
+        }
+
+        function renderBanGroup(container, banIds, isPublic) {
+            const slots = container.querySelectorAll('.ban-slot');
+            slots.forEach((slot, idx) => {
+                const petId = banIds[idx] || null;
+                if (petId) {
+                    const pet = getPet(petId);
+                    if (pet) {
+                        slot.className = 'ban-slot filled';
+                        let html = `
+                            <img src="${pet.imageSourceUrl}" alt="${pet.name}" loading="lazy">
+                            <span class="pet-name-tiny">${pet.name}</span>
+                        `;
+                        if (!isPublic) {
+                            html += `<span class="ban-mark">✕</span>`;
+                        } else {
+                            const fromP1 = state.p1.bans.includes(petId);
+                            const fromP2 = state.p2.bans.includes(petId);
+                            if (fromP1 || fromP2) {
+                                const label = fromP1 ? 'P1' : 'P2';
+                                html += `<span class="from-player">${label}</span>`;
+                            }
+                        }
+                        slot.innerHTML = html;
+                    }
+                } else {
+                    slot.className = 'ban-slot';
+                    slot.innerHTML = '';
+                }
+            });
+        }
+
+        function renderPickSlots() {
+            renderPickGroup(elPickSlots1, state.p1.picks);
+            renderPickGroup(elPickSlots2, state.p2.picks);
+        }
+
+        function renderPickGroup(container, pickIds) {
+            const slots = container.querySelectorAll('.pick-slot');
+            slots.forEach((slot, idx) => {
+                const petId = pickIds[idx] || null;
+                if (petId) {
+                    const pet = getPet(petId);
+                    if (pet) {
+                        slot.className = 'pick-slot filled';
+                        slot.innerHTML = `
+                            <img src="${pet.imageSourceUrl}" alt="${pet.name}" loading="lazy">
+                            <span class="pick-name">${pet.name}</span>
+                            <span class="pick-value">${pet.magic}</span>
+                        `;
+                    }
+                } else {
+                    slot.className = 'pick-slot';
+                    slot.innerHTML = `<span class="empty-hint">—</span>`;
+                }
+            });
+        }
+
+        function renderPool() {
+            const groups = {};
+            state.allPets.forEach(pet => {
+                if (!groups[pet.magic]) groups[pet.magic] = [];
+                groups[pet.magic].push(pet);
+            });
+            const sortedValues = Object.keys(groups).sort((a, b) => b - a);
+
+            let html = '';
+            sortedValues.forEach(val => {
+                const pets = groups[val];
+                html += `<div class="pool-group">`;
+                html += `<div class="group-label"><span>${val}★</span><span class="line"></span></div>`;
+                html += `<div class="pool-items">`;
+                pets.forEach(pet => {
+                    const inPool = isPetInPool(pet.id);
+                    const classes = `pool-pet ${inPool ? '' : 'used'}`;
+                    html += `
+                        <div class="${classes}"
+                             data-pet-id="${pet.id}"
+                             title="${pet.name} (${pet.magic}★)"
+                             draggable="${inPool ? 'true' : 'false'}">
+                            <img src="${pet.imageSourceUrl}" alt="${pet.name}" loading="lazy">
+                            <span class="pet-name">${pet.name}</span>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+            elPoolGroups.innerHTML = html;
+
+            const total = state.allPets.length;
+            const used = state.allPets.filter(p => !isPetInPool(p.id)).length;
+            elRemainCount.textContent = `剩余: ${total - used}`;
+        }
+
+        function renderCounts() {
+            elBanCount1.textContent = `${state.p1.bans.length} / 4`;
+            elBanCount2.textContent = `${state.p2.bans.length} / 4`;
+            elBanCountPub.textContent = `${state.pubBans.length} / 2`;
+            elPickCount1.textContent = `${state.p1.picks.length} / 6`;
+            elPickCount2.textContent = `${state.p2.picks.length} / 6`;
+        }
+
+        function updatePlayerNameLabels() {
+            const name1 = elP1NameInput.value || '玩家1';
+            const name2 = elP2NameInput.value || '玩家2';
+            elBanLabel1.textContent = `🔵 ${name1} Ban位`;
+            elBanLabel2.textContent = `🔴 ${name2} Ban位`;
+        }
+
+        // ============================================================
+        //  8. 初始化
+        // ============================================================
+
+        function init() {
+            renderAll();
+            initDragDrop();
+
+            elBtnUndo.addEventListener('click', undo);
+            elBtnReset.addEventListener('click', resetAll);
+
+            elP1NameInput.addEventListener('input', updatePlayerNameLabels);
+            elP2NameInput.addEventListener('input', updatePlayerNameLabels);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
